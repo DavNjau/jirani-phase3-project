@@ -1,43 +1,38 @@
-# seed.py
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from model import Base, Category, Business, Product, Consumer
+from app.db_setup import Session, engine, Base
+from app.models import Consumer, Product, Order, OrderList
+from datetime import datetime
 
-engine = create_engine("sqlite:///db/app.db")
-Session = sessionmaker(bind=engine)
+Base.metadata.create_all(engine)
 session = Session()
 
-def seed():
-    # Add categories
-    cat1 = Category(type="Electronics")
-    cat2 = Category(type="Groceries")
+consumers = [
+    Consumer(name="Alice", location="Nairobi", phone="0711111111"),
+    Consumer(name="Bob", location="Mombasa", phone="0722222222"),
+    Consumer(name="Charlie", location="Kisumu", phone="0733333333")
+]
+session.add_all(consumers)
+session.commit()
 
-    session.add_all([cat1, cat2])
-    session.commit()
+products = [
+    Product(name="Laptop", business_id=1),
+    Product(name="Phone", business_id=2),
+    Product(name="Headphones", business_id=1)
+]
+session.add_all(products)
+session.commit()
 
-    # Add businesses
-    biz1 = Business(name="TechZone", location="Nairobi", category=cat1)
-    biz2 = Business(name="FreshMart", location="Thika", category=cat2)
+order1 = Order(consumer_id=1, created_at=datetime.utcnow())
+order2 = Order(consumer_id=2, created_at=datetime.utcnow())
+session.add_all([order1, order2])
+session.commit()
 
-    session.add_all([biz1, biz2])
-    session.commit()
+items = [
+    OrderList(order_id=1, product_id=1, quantity=1),
+    OrderList(order_id=1, product_id=3, quantity=2),
+    OrderList(order_id=2, product_id=2, quantity=1)
+]
+session.add_all(items)
+session.commit()
 
-    # Add products
-    p1 = Product(name="Laptop", price=55000, business=biz1)
-    p2 = Product(name="Headphones", price=2500, business=biz1)
-    p3 = Product(name="Bananas", price=120, business=biz2)
-
-    session.add_all([p1, p2, p3])
-    session.commit()
-
-    # Add consumers
-    c1 = Consumer(name="John Doe", location="Nairobi", phone="0700000000")
-    c2 = Consumer(name="Alice", location="Kiambu", phone="0712345678")
-
-    session.add_all([c1, c2])
-    session.commit()
-
-    print("Database seeded successfully!")
-
-if __name__ == "__main__":
-    seed()
+print("Sample data added successfully!")
+session.close()
